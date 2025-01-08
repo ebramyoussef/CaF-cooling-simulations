@@ -1,3 +1,4 @@
+import QuantumStates
 QN_bounds = (
     label="A",
     S=1 / 2,
@@ -5,19 +6,19 @@ QN_bounds = (
     Λ=(-1, 1),
     J=1 / 2
 )
-A_state_basis = order_basis_by_m(enumerate_states(HundsCaseA_LinearMolecule, QN_bounds))
+A_state_basis = QuantumStates.order_basis_by_m(QuantumStates.enumerate_states(QuantumStates.HundsCaseA_LinearMolecule, QN_bounds))
 
 A_state_operator = :(
-    T_A * DiagonalOperator +
-    Be_A * Rotation +
-    Aso_A * SpinOrbit +
-    q_A * (ΛDoubling_q + 2ΛDoubling_p2q) +
-    p_A * ΛDoubling_p2q +
+    T_A * QuantumStates.DiagonalOperator +
+    Be_A * QuantumStates.Rotation +
+    Aso_A * QuantumStates.SpinOrbit +
+    q_A * (QuantumStates.ΛDoubling_q + 2 * QuantumStates.ΛDoubling_p2q) +
+    p_A * QuantumStates.ΛDoubling_p2q +
     # B_z * Zeeman_L +
     # b00_A * Hyperfine_IL +
     # b00_A * Hyperfine_IF +
-    b00_A * (Hyperfine_IF - Hyperfine_IL) +
-    s * basis_splitting
+    b00_A * (QuantumStates.Hyperfine_IF - QuantumStates.Hyperfine_IL) +
+    s * QuantumStates.basis_splitting
 )
 
 # Spectroscopic constants for CaOH, A state
@@ -32,8 +33,8 @@ A_state_parameters = QuantumStates.@params begin
     s = 1e6
 end;
 
-A_state_ham_caseA = Hamiltonian(basis=A_state_basis, operator=A_state_operator, parameters=A_state_parameters)
-evaluate!(A_state_ham_caseA)
+A_state_ham_caseA = QuantumStates.Hamiltonian(basis=A_state_basis, operator=A_state_operator, parameters=A_state_parameters)
+QuantumStates.evaluate!(A_state_ham_caseA)
 QuantumStates.solve!(A_state_ham_caseA)
 
 # Convert A state from Hund's case (a) to Hund's case (b)
@@ -45,5 +46,5 @@ QN_bounds = (
     N=1,
     J=1 / 2
 )
-A_state_caseB_basis = order_basis_by_m(enumerate_states(HundsCaseB_LinearMolecule, QN_bounds))
-A_state_ham = convert_basis(A_state_ham_caseA, A_state_caseB_basis)
+A_state_caseB_basis = QuantumStates.order_basis_by_m(QuantumStates.enumerate_states(HundsCaseB_LinearMolecule, QN_bounds))
+A_state_ham = QuantumStates.convert_basis(A_state_ham_caseA, A_state_caseB_basis)

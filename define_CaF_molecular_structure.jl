@@ -1,6 +1,7 @@
+import QuantumStates
+import OpticalBlochEquations
 include("CaF_X.jl")
 include("CaF_A.jl")
-
 # Define constants for the laser cooling transition
 @everywhere begin
     @consts begin
@@ -11,11 +12,11 @@ include("CaF_A.jl")
     end
 end
 
-H = CombinedHamiltonian([X_state_ham, A_state_ham])
-evaluate!(H)
+H = QuantumStates.CombinedHamiltonian([X_state_ham, A_state_ham])
+QuantumStates.evaluate!(H)
 QuantumStates.solve!(H)
-update_basis_tdms!(H)
-update_tdms!(H)
+QuantumStates.update_basis_tdms!(H)
+QuantumStates.update_tdms!(H)
 
 ground_state_idxs = 1:12
 excited_state_idxs = 17:20
@@ -27,13 +28,13 @@ excited_states = H.states[excited_state_idxs]
 d = H.tdms[states_idxs, states_idxs, :]
 states = H.states[states_idxs]
 
-Zeeman_x(state, state′) = (Zeeman(state, state′, -1) - Zeeman(state, state′, 1)) / √2
-Zeeman_y(state, state′) = im * (Zeeman(state, state′, -1) + Zeeman(state, state′, 1)) / √2
-Zeeman_z(state, state′) = Zeeman(state, state′, 0)
+Zeeman_x(state, state′) = (QuantumStates.Zeeman(state, state′, -1) - QuantumStates.Zeeman(state, state′, 1)) / √2
+Zeeman_y(state, state′) = im * (QuantumStates.Zeeman(state, state′, -1) + QuantumStates.Zeeman(state, state′, 1)) / √2
+Zeeman_z(state, state′) = QuantumStates.Zeeman(state, state′, 0)
 
-Zeeman_x_mat = real.(operator_to_matrix(Zeeman_x, ground_states) .* (1e-4 * gS * μB * (2π / Γ) / h))
-Zeeman_y_mat = imag.(operator_to_matrix(Zeeman_y, ground_states) .* (1e-4 * gS * μB * (2π / Γ) / h))
-Zeeman_z_mat = real.(operator_to_matrix(Zeeman_z, ground_states) .* (1e-4 * gS * μB * (2π / Γ) / h))
+Zeeman_x_mat = real.(OpticalBlochEquations.operator_to_matrix(Zeeman_x, ground_states) .* (1e-4 * gS * μB * (2π / Γ) / h))
+Zeeman_y_mat = imag.(OpticalBlochEquations.operator_to_matrix(Zeeman_y, ground_states) .* (1e-4 * gS * μB * (2π / Γ) / h))
+Zeeman_z_mat = real.(OpticalBlochEquations.operator_to_matrix(Zeeman_z, ground_states) .* (1e-4 * gS * μB * (2π / Γ) / h))
 
 # Stark_x(state, state′) = (Stark(state, state′,-1) - Zeeman(state, state′,1)) / √2
 

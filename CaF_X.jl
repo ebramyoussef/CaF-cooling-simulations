@@ -1,4 +1,5 @@
 # Define a Hund's case (b) basis for the Hamiltonian, using states from N=0 to N=3
+import QuantumStates
 QN_bounds = (
     label="X",
     S=1 / 2,
@@ -6,15 +7,15 @@ QN_bounds = (
     Λ=0,
     N=1
 )
-X_state_basis = order_basis_by_m(enumerate_states(HundsCaseB_LinearMolecule, QN_bounds))
+X_state_basis = QuantumStates.order_basis_by_m(QuantumStates.enumerate_states(QuantumStates.HundsCaseB_LinearMolecule, QN_bounds))
 
 # Define the operator for the X state Hamiltonian of CaOH
 X_state_operator = :(
-    BX * Rotation +
-    DX * RotationDistortion +
-    γX * SpinRotation +
-    cX * (Hyperfine_Dipolar / 3) +
-    s * basis_splitting
+    BX * QuantumStates.Rotation +
+    DX * QuantumStates.RotationDistortion +
+    γX * QuantumStates.SpinRotation +
+    cX * (QuantumStates.Hyperfine_Dipolar / 3) +
+    s * QuantumStates.basis_splitting
 );
 
 X_state_parameters = QuantumStates.@params begin
@@ -26,6 +27,6 @@ X_state_parameters = QuantumStates.@params begin
     s = 1
 end
 
-X_state_ham = Hamiltonian(basis=X_state_basis, operator=X_state_operator, parameters=X_state_parameters)
-evaluate!(X_state_ham)
+X_state_ham = QuantumStates.Hamiltonian(basis=X_state_basis, operator=X_state_operator, parameters=X_state_parameters)
+QuantumStates.evaluate!(X_state_ham)
 QuantumStates.solve!(X_state_ham)

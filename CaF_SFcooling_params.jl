@@ -1,8 +1,9 @@
 ### SIMULATION PARAMETERS: 3-FREQUENCY 1+2 BLUE MOT  ###
-
+import QuantumStates
+include("define_CaF_molecular_structure.jl")
 # DEFINE STATES #
-energy_offset = (2π / Γ) * energy(states[13])
-energies = energy.(states) .* (2π / Γ)
+energy_offset = (2π / Γ) * QuantumStates.energy(states[13])
+energies = QuantumStates.energy.(states) .* (2π / Γ)
 
 # DEFINE FREQUENCIES #
 detuning = +1
@@ -10,15 +11,15 @@ detuning = +1
 
 Δ1 = 1e6 * (detuning + δ1)
 
-f1 = energy(states[end]) - energy(states[1]) + Δ1
+f1 = states.energy(states[end]) - states.energy(states[1]) + Δ1
 
 freqs = [f1] .* (2π / Γ)
 
 # DEFINE SATURATION INTENSITIES #
 beam_radius = 5e-3
-Isat = π * h * c * Γ / (3λ^3)
+Isat = π * h * c * Γ / (3*λ^3)
 P = 0.55 * 13.1e-3 # 13.1 mW/1 V at 1.0 V, factor of 0.55 to match scattering rates
-I = 2P / (π * beam_radius^2)
+I = 2*P / (π * beam_radius^2)
 
 total_sat = I / Isat
 s1 = total_sat
