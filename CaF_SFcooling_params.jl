@@ -1,5 +1,6 @@
 ### SIMULATION PARAMETERS: 3-FREQUENCY 1+2 BLUE MOT  ###
 import QuantumStates
+import UnitsToValue: c, ħ
 include("define_CaF_molecular_structure.jl")
 # DEFINE STATES #
 energy_offset = (2π / Γ) * QuantumStates.energy(states[13])
@@ -11,7 +12,7 @@ detuning = +1
 
 Δ1 = 1e6 * (detuning + δ1)
 
-f1 = states.energy(states[end]) - states.energy(states[1]) + Δ1
+f1 = QuantumStates.energy(states[end]) - QuantumStates.energy(states[1]) + Δ1
 
 freqs = [f1] .* (2π / Γ)
 
@@ -27,7 +28,7 @@ s1 = total_sat
 sats = [s1]
 
 # DEFINE POLARIZATIONS #
-pols = [σ⁻]
+pols = [OpticalBlochEquations.σ⁻]
 
 # DEFINE FUNCTION TO UPDATE PARAMETERS DURING SIMULATION #
 @everywhere function update_p_SFcooling!(p, r, t)

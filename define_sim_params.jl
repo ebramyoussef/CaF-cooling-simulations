@@ -2,6 +2,7 @@
 import QuantumStates
 import OpticalBlochEquations
 import StructArrays
+import UnitsToValue: kB
 include("define_CaF_molecular_structure.jl")
 sim_type = Float64
 

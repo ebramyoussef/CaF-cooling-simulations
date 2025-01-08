@@ -46,5 +46,5 @@ QN_bounds = (
     N=1,
     J=1 / 2
 )
-A_state_caseB_basis = QuantumStates.order_basis_by_m(QuantumStates.enumerate_states(HundsCaseB_LinearMolecule, QN_bounds))
+A_state_caseB_basis = QuantumStates.order_basis_by_m(QuantumStates.enumerate_states(QuantumStates.HundsCaseB_LinearMolecule, QN_bounds))
 A_state_ham = QuantumStates.convert_basis(A_state_ham_caseA, A_state_caseB_basis)

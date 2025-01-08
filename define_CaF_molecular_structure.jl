@@ -1,13 +1,16 @@
 import QuantumStates
 import OpticalBlochEquations
+import Distributed
+import StaticArrays
+import UnitsToValue: μB, gS, h
 include("CaF_X.jl")
 include("CaF_A.jl")
 # Define constants for the laser cooling transition
-@everywhere begin
-    @consts begin
+Distributed.@everywhere begin
+    QuantumStates.@consts begin
         λ = 606e-9
         Γ = 2π * 8.3e6
-        m = @with_unit 59 "u"
+        m = UnitsToValue.@with_unit 59 "u"
         k = 2π / λ
     end
 end
