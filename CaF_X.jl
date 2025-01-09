@@ -15,16 +15,18 @@ X_state_operator = :(
     DX * QuantumStates.RotationDistortion +
     γX * QuantumStates.SpinRotation +
     cX * (QuantumStates.Hyperfine_Dipolar / 3) +
-    s * QuantumStates.basis_splitting
+    bX * QuantumStates.Hyperfine_IS
+    # s * QuantumStates.basis_splitting
 );
 
 X_state_parameters = QuantumStates.@params begin
     BX = 10303.988 * 1e6
     DX = 0.014060 * 1e6
     γX = 39.65891 * 1e6
-    bX = 109.1839 * 1e6
     cX = 40.1190 * 1e6
-    s = 1
+    # bX = 109.1839 * 1e6
+    bX = 122.5569 * 1e6
+    # s = 1
 end
 
 X_state_ham = QuantumStates.Hamiltonian(basis=X_state_basis, operator=X_state_operator, parameters=X_state_parameters)

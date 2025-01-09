@@ -116,14 +116,14 @@ end
 # TEMPERATURE FITTING FUNCTIONS #
 function T_fit(vs)
 
-    hist_data = fit(Histogram, vs, 0:0.01:2.0)
+    hist_data = fit(Histogram, vs, 0:0.1:2.0)
     hist_data.isdensity = true
     v = collect(hist_data.edges[1])
     dv = v[2] - v[1]
     v = v[1:end-1] .+ dv / 2
     fv = hist_data.weights ./ (sum(hist_data.weights) * dv)
 
-    v_fit = LsqFit.curve_fit(maxwell_boltzmann, v, fv, [1, 150e-6])
+    v_fit = LsqFit.curve_fit(maxwell_boltzmann, v, fv, [10, 10e-6])
     A, temp = v_fit.param
 
     return temp

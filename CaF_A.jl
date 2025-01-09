@@ -17,8 +17,8 @@ A_state_operator = :(
     # B_z * Zeeman_L +
     # b00_A * Hyperfine_IL +
     # b00_A * Hyperfine_IF +
-    b00_A * (QuantumStates.Hyperfine_IF - QuantumStates.Hyperfine_IL) +
-    s * QuantumStates.basis_splitting
+    b00_A * (QuantumStates.Hyperfine_IF - QuantumStates.Hyperfine_IL)
+    # s * QuantumStates.basis_splitting
 )
 
 # Spectroscopic constants for CaOH, A state
@@ -30,7 +30,7 @@ A_state_parameters = QuantumStates.@params begin
     p_A = -0.044517 * c * 1e2
     q_A = -2.916e-4 * c * 1e2
     B_z = 0.0
-    s = 1e6
+    # s = 1e6
 end;
 
 A_state_ham_caseA = QuantumStates.Hamiltonian(basis=A_state_basis, operator=A_state_operator, parameters=A_state_parameters)
