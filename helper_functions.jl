@@ -1,12 +1,8 @@
-import QuantumStates
-import OpticalBlochEquations
-import WignerSymbols_Simple
-import BeamPropagation
-import UnitsToValue
-import Distributed
-import ProgressMeter
-import DifferentialEquations
-import Distributions
+using Distributed
+
+@everywhere using QuantumStates, OpticalBlochEquations, WignerSymbols_Simple, BeamPropagation, UnitsToValue, ProgressMeter, DifferentialEquations, Distributions, LsqFit, Bootstrap
+@everywhere using StatsBase: Histogram, fit, mean
+
 x(u) = real(u[32+4+1]) * (1 / k) # why these indices?
 y(u) = real(u[32+4+2]) * (1 / k)
 z(u) = real(u[32+4+3]) * (1 / k)
@@ -74,7 +70,7 @@ Distributed.@everywhere function sample_velocity(p)
 end
 
 ### FITTING FUNCTIONS ###
-import LsqFit
+
 
 function gaussian(x, p)
     σ, x0, A = p
@@ -92,7 +88,6 @@ function maxwell_boltzmann_1D(v, p)
 end
 
 ### FITTING FUNCTIONS ###
-import StatsBase: Histogram, fit
 
 # POSITION FITTING FUNCTIONS #
 function σ_fit(xs)
@@ -285,8 +280,7 @@ function distributed_solve(n_trajectories, prob, prob_func, scan_func, scan_valu
     return all_sols
 end
 
-import StatsBase: mean
-import Bootstrap
+
 function distributed_compute_diffusion(prob, prob_func, n_trajectories, t_end, τ_total, n_times, scan_func, scan_values)
 
     diffusions = zeros(length(scan_values))

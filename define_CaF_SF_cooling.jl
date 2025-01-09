@@ -1,23 +1,20 @@
-import QuantumStates
-import OpticalBlochEquations
-import Distributed
-import StaticArrays
-import UnitsToValue: μB, gS, h, c, ħ, kB
-import DifferentialEquations
-import MutableNamedTuples: MutableNamedTuple
-@everywhere import LoopVectorization: @turbo
+using Distributed
+@everywhere using QuantumStates, OpticalBlochEquations, StaticArrays, StructArrays, DifferentialEquations
+@everywhere using LoopVectorization: @turbo
+@everywhere using UnitsToValue: μB, gS, h, c, ħ, kB
+@everywhere using MutableNamedTuples: MutableNamedTuple
 
 include("CaF_X.jl")
 include("CaF_A.jl")
 
 # Define constants for the laser cooling transition
-Distributed.@everywhere begin
-    QuantumStates.@consts begin
-        λ = 606e-9
-        Γ = 2π * 8.3e6
-        m = UnitsToValue.@with_unit 59 "u"
-        k = 2π / λ
-    end
+@everywhere begin
+	QuantumStates.@consts begin
+		λ = 606e-9
+		Γ = 2π * 8.3e6
+		m = UnitsToValue.@with_unit 59 "u"
+		k = 2π / λ
+	end
 end
 
 # Define and evaluate Hamiltonian
@@ -51,24 +48,24 @@ Zeeman_z_mat = real.(OpticalBlochEquations.operator_to_matrix(Zeeman_z, ground_s
 
 
 @everywhere function add_terms_dψ!(dψ, ψ, p, r, t)
-    @turbo for i ∈ 1:12
-        dψ_i_re = zero(eltype(dψ.re))
-        dψ_i_im = zero(eltype(dψ.im))
-        for j ∈ 1:12
-            ψ_i_re = ψ.re[j]
-            ψ_i_im = ψ.im[j]
+	@turbo for i ∈ 1:12
+		dψ_i_re = zero(eltype(dψ.re))
+		dψ_i_im = zero(eltype(dψ.im))
+		for j ∈ 1:12
+			ψ_i_re = ψ.re[j]
+			ψ_i_im = ψ.im[j]
 
-            H_re = p.sim_params.Bx * p.sim_params.Zeeman_Hx[i, j] + p.sim_params.Bz * p.sim_params.Zeeman_Hz[i, j]
-            H_im = p.sim_params.By * p.sim_params.Zeeman_Hy[i, j]
+			H_re = p.sim_params.Bx * p.sim_params.Zeeman_Hx[i, j] + p.sim_params.Bz * p.sim_params.Zeeman_Hz[i, j]
+			H_im = p.sim_params.By * p.sim_params.Zeeman_Hy[i, j]
 
-            dψ_i_re += ψ_i_re * H_re - ψ_i_im * H_im
-            dψ_i_im += ψ_i_re * H_im + ψ_i_im * H_re
+			dψ_i_re += ψ_i_re * H_re - ψ_i_im * H_im
+			dψ_i_im += ψ_i_re * H_im + ψ_i_im * H_re
 
-        end
-        dψ.re[i] += dψ_i_im
-        dψ.im[i] -= dψ_i_re
-    end
-    return nothing
+		end
+		dψ.re[i] += dψ_i_im
+		dψ.im[i] -= dψ_i_re
+	end
+	return nothing
 end
 
 energy_offset = (2π / Γ) * QuantumStates.energy(states[13]) #?
@@ -86,9 +83,9 @@ freqs = [f1] .* (2π / Γ)
 
 # DEFINE SATURATION INTENSITIES #
 beam_radius = 5e-3
-Isat = π * h * c * Γ / (3*λ^3)
+Isat = π * h * c * Γ / (3 * λ^3)
 P = 0.55 * 13.1e-3 # 13.1 mW/1 V at 1.0 V, factor of 0.55 to match scattering rates
-I = 2*P / (π * beam_radius^2)
+I = 2 * P / (π * beam_radius^2)
 
 total_sat = I / Isat
 s1 = total_sat
@@ -100,17 +97,17 @@ pols = [OpticalBlochEquations.σ⁻]
 
 # DEFINE FUNCTION TO UPDATE PARAMETERS DURING SIMULATION #
 @everywhere function update_p_SFcooling!(p, r, t)
-    s = p.sim_params.total_sat
-    s_factor = p.sim_params.s_factor_end
-    p.sats[1] = s * s_factor
-    return nothing
+	s = p.sim_params.total_sat
+	s_factor = p.sim_params.s_factor_end
+	p.sats[1] = s * s_factor
+	return nothing
 end
 
 @everywhere function update_p_SFcooling_diffusion!(p, r, t)
-    s = p.sim_params.total_sat
-    s_factor = p.sim_params.s_factor_end
-    p.sats[1] = s * s_factor
-    return nothing
+	s = p.sim_params.total_sat
+	s_factor = p.sim_params.s_factor_end
+	p.sats[1] = s * s_factor
+	return nothing
 end
 
 # Define simulation parameters #
@@ -146,25 +143,25 @@ sim_params = MutableNamedTuple(
 
 t_start = 0.0
 t_end   = 1e-3
-t_span  = (t_start, t_end) ./ (1/Γ)
+t_span  = (t_start, t_end) ./ (1 / Γ)
 
-p_SFcooling = OpticalBlochEquations.initialize_prob(sim_type, energies, freqs, sats, pols, beam_radius, d, m/(ħ*k^2/Γ), Γ, k, sim_params, update_p_SFcooling!, add_terms_dψ!)
+p_SFcooling = OpticalBlochEquations.initialize_prob(sim_type, energies, freqs, sats, pols, beam_radius, d, m / (ħ * k^2 / Γ), Γ, k, sim_params, update_p_SFcooling!, add_terms_dψ!)
 
-cb1 = DifferentialEquations.ContinuousCallback(OpticalBlochEquations.condition_new, OpticalBlochEquations.stochastic_collapse_new!, save_positions=(false,false))
+cb1 = DifferentialEquations.ContinuousCallback(OpticalBlochEquations.condition_new, OpticalBlochEquations.stochastic_collapse_new!, save_positions = (false, false))
 cb2 = DifferentialEquations.DiscreteCallback(terminate_condition, DifferentialEquations.terminate!)
-cbs = DifferentialEquations.CallbackSet(cb1,cb2)
+cbs = DifferentialEquations.CallbackSet(cb1, cb2)
 
-kwargs = (alg=DifferentialEquations.DP5(), reltol=1e-4, saveat=1000, maxiters=200000000, callback=cbs)
-prob_SFcooling = DifferentialEquations.ODEProblem(ψ_fast!, p_SFcooling.u0, sim_type.(t_span), p_SFcooling; kwargs...)
+kwargs = (alg = DifferentialEquations.DP5(), reltol = 1e-4, saveat = 1000, maxiters = 200000000, callback = cbs)
+prob_SFcooling = DifferentialEquations.ODEProblem(OpticalBlochEquations.ψ_fast!, p_SFcooling.u0, sim_type.(t_span), p_SFcooling; kwargs...)
 
 # PROBLEM TO COMPUTE DIFFUSION #
-p_SFcooling_diffusion = OpticalBlochEquations.initialize_prob(sim_type, energies, freqs, sats, pols, Inf, d, m/(ħ*k^2/Γ), Γ, k, sim_params, update_p_SFcooling_diffusion!, add_terms_dψ!)
+p_SFcooling_diffusion = OpticalBlochEquations.initialize_prob(sim_type, energies, freqs, sats, pols, Inf, d, m / (ħ * k^2 / Γ), Γ, k, sim_params, update_p_SFcooling_diffusion!, add_terms_dψ!)
 
-cb1_diffusion = DifferentialEquations.ContinuousCallback(OpticalBlochEquations.condition_new, OpticalBlochEquations.stochastic_collapse_new!, save_positions=(false,false))
+cb1_diffusion = DifferentialEquations.ContinuousCallback(OpticalBlochEquations.condition_new, OpticalBlochEquations.stochastic_collapse_new!, save_positions = (false, false))
 cbs_diffusion = DifferentialEquations.CallbackSet(cb1_diffusion)
 
-kwargs = (alg=DifferentialEquations.DP5(), reltol=1e-4, saveat=1000, maxiters=200000000, callback=cbs_diffusion)
-prob_SFcooling_diffusion = DifferentialEquations.ODEProblem(ψ_fast_ballistic!, p_SFcooling_diffusion.u0, sim_type.(t_span), p_SFcooling_diffusion; kwargs...)
+kwargs = (alg = DifferentialEquations.DP5(), reltol = 1e-4, saveat = 1000, maxiters = 200000000, callback = cbs_diffusion)
+prob_SFcooling_diffusion = DifferentialEquations.ODEProblem(OpticalBlochEquations.ψ_fast_ballistic!, p_SFcooling_diffusion.u0, sim_type.(t_span), p_SFcooling_diffusion; kwargs...)
 
 # set the total saturation
 prob_SFcooling.p.sim_params.total_sat = sum(sats)
