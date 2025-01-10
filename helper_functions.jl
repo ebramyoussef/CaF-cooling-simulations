@@ -390,4 +390,18 @@ end
 end
 
     
-    
+function update_omegas!(prob, δ)
+    # DEFINE FREQUENCIES #
+    detuning = +24
+
+    Δ1 = 1e6 * (detuning)
+    Δ2 = 1e6 * (detuning + δ)
+
+    f1 = QuantumStates.energy(states[end]) - QuantumStates.energy(states[1]) + Δ1
+    f2 = QuantumStates.energy(states[end]) - QuantumStates.energy(states[12]) + Δ2
+
+    freqs = [f1, f2] .* (2π / Γ)
+    prob.p.ωs[1] = freqs[1]
+    prob.p.ωs[2] = freqs[2]
+    return nothing
+end

@@ -72,7 +72,7 @@ energy_offset = (2π / Γ) * QuantumStates.energy(states[13]) #?
 energies = QuantumStates.energy.(states) .* (2π / Γ)
 
 # DEFINE FREQUENCIES #
-detuning = +20
+detuning = +24
 δ1 = +3
 
 Δ1 = 1e6 * (detuning)
@@ -86,7 +86,7 @@ freqs = [f1, f2] .* (2π / Γ)
 # DEFINE SATURATION INTENSITIES #
 beam_radius = 5e-3
 Isat = π * h * c * Γ / (3 * λ^3)
-P = 5e-3 # 13.1 mW/1 V at 1.0 V, factor of 0.55 to match scattering rates
+P = 2.5e-3 # 13.1 mW/1 V at 1.0 V, factor of 0.55 to match scattering rates
 I = 2 * P / (π * beam_radius^2)
 
 total_sat = I / Isat
