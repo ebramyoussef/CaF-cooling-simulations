@@ -72,8 +72,8 @@ energy_offset = (2π / Γ) * QuantumStates.energy(states[13]) #?
 energies = QuantumStates.energy.(states) .* (2π / Γ)
 
 # DEFINE FREQUENCIES #
-detuning = +24
-δ1 = +3
+detuning = +30
+δ1 = +0
 
 Δ1 = 1e6 * (detuning)
 Δ2 = 1e6 * (detuning + δ1)
@@ -121,9 +121,9 @@ sim_type = Float64
 σx_initial = 585e-6
 σy_initial = 585e-6
 σz_initial = 435e-6
-Tx_initial = 35e-6
-Ty_initial = 35e-6
-Tz_initial = 35e-6
+Tx_initial = 50e-6
+Ty_initial = 50e-6
+Tz_initial = 50e-6
 
 
 sim_params = MutableNamedTuple(
@@ -146,7 +146,7 @@ sim_params = MutableNamedTuple(
 # PROBLEM TO CALCULATE TRAJECTORIES #
 
 t_start = 0.0
-t_end   = 1e-3
+t_end   = 2e-3
 t_span  = (t_start, t_end) ./ (1 / Γ)
 
 p_SFcooling = OpticalBlochEquations.initialize_prob(sim_type, energies, freqs, sats, pols, beam_radius, d, m / (ħ * k^2 / Γ), Γ, k, sim_params, update_p_SFcooling!, add_terms_dψ!)

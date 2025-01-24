@@ -116,7 +116,7 @@ end
 # TEMPERATURE FITTING FUNCTIONS #
 function T_fit(vs)
 
-    hist_data = fit(Histogram, vs, 0:0.1:2.0)
+    hist_data = fit(Histogram, vs, 0.0:0.07:2.0)
     hist_data.isdensity = true
     v = collect(hist_data.edges[1])
     dv = v[2] - v[1]
@@ -131,7 +131,7 @@ end
 
 function T_fit_1D(vs)
 
-    hist_data = fit(Histogram, vs, -1.0:0.05:1.0)
+    hist_data = fit(Histogram, vs, -1.0:0.06:1.0)
     hist_data.isdensity = true
     v = collect(hist_data.edges[1])
     dv = v[2] - v[1]
@@ -239,6 +239,36 @@ function T_ensemble_sol(ensemble_sol)
 
     return T
 end
+
+
+function T_ensemble_sol_arb_idx(ensemble_sol, idx)
+
+    vxs = [vx(sol.u[idx]) for sol ∈ ensemble_sol if survived(sol)]
+    vys = [vy(sol.u[idx]) for sol ∈ ensemble_sol if survived(sol)]
+    vzs = [vz(sol.u[idx]) for sol ∈ ensemble_sol if survived(sol)]
+
+    vs = sqrt.(vxs .^ 2 .+ vys .^ 2 .+ vzs .^ 2)
+
+    T = T_fit(vs)
+
+    return T
+end
+
+function get_histogram_arb_idx(ensemble_sol, idx, binning=0.07)
+    vxs = [vx(sol.u[idx]) for sol ∈ ensemble_sol if survived(sol)]
+    vys = [vy(sol.u[idx]) for sol ∈ ensemble_sol if survived(sol)]
+    vzs = [vz(sol.u[idx]) for sol ∈ ensemble_sol if survived(sol)]
+
+    vs = sqrt.(vxs .^ 2 .+ vys .^ 2 .+ vzs .^ 2)
+    hist_data = fit(Histogram, vs, 0.0:binning:2.0)
+    hist_data.isdensity = true
+    v = collect(hist_data.edges[1])
+    dv = v[2] - v[1]
+    v = v[1:end-1] .+ dv / 2
+    fv = hist_data.weights ./ (sum(hist_data.weights) * dv)
+    return fv, hist_data
+end
+
 
 function distributed_solve(n_trajectories, prob, prob_func, scan_func, scan_values)
 
@@ -389,7 +419,6 @@ end
     end
 end
 
-    
 function update_omegas!(prob, δ)
     # DEFINE FREQUENCIES #
     detuning = +24
@@ -405,3 +434,59 @@ function update_omegas!(prob, δ)
     prob.p.ωs[2] = freqs[2]
     return nothing
 end
+    
+
+# function update_params!(prob, Δ, δ, intensity, I_ratio)
+#     detuning = Δ
+
+#     Δ1 = 1e6 * (detuning  + δ)
+#     Δ2 = 1e6 * (detuning)
+
+#     f1 = QuantumStates.energy(states[end]) - QuantumStates.energy(states[1]) + Δ1
+#     f2 = QuantumStates.energy(states[end]) - QuantumStates.energy(states[12]) + Δ2
+
+#     freqs = [f1, f2] .* (2π / Γ)
+#     prob.p.ωs[1] = freqs[1]
+#     prob.p.ωs[2] = freqs[2]
+
+#     beam_radius = 5e-3
+#     Isat = π * h * c * Γ / (3 * λ^3)
+#     # P = 5e-3
+#     # I = 2 * P / (π * beam_radius^2)
+#     I = intensity
+#     total_sat = I / Isat
+#     s1 = total_sat/2
+#     s2 = s1*I_ratio
+#     prob.p.sats[1] = s1
+#     prob.p.sats[2] = s2
+#     return nothing
+# end
+function update_params!(prob, Δ, δ, max_power_frac)
+    detuning = Δ
+
+    Δ1 = 1e6 * (detuning  + δ)
+    Δ2 = 1e6 * (detuning)
+
+    f1 = QuantumStates.energy(states[end]) - QuantumStates.energy(states[1]) + Δ1
+    f2 = QuantumStates.energy(states[end]) - QuantumStates.energy(states[12]) + Δ2
+
+    freqs = [f1, f2] .* (2π / Γ)
+    prob.p.ωs[1] = freqs[1]
+    prob.p.ωs[2] = freqs[2]
+
+    beam_radius = 1e-2
+    Isat = π * h * c * Γ / (3 * λ^3)
+    P1 = max_power_frac*0.55*5.8e-3
+    P2 = max_power_frac*0.55*5.2e-3
+    I1 = 2 * P1 / (π * beam_radius^2)
+    I2 = 2 * P2 / (π * beam_radius^2)
+    total_sat1 = I1 / Isat
+    total_sat2 = I2 / Isat
+    s1 = total_sat1
+    s2 = total_sat2
+    prob.p.sats[1] = s1
+    prob.p.sats[2] = s2
+    return nothing
+end
+    
+
