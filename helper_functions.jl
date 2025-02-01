@@ -476,8 +476,8 @@ function update_params!(prob, Δ, δ, max_power_frac)
 
     beam_radius = 1e-2
     Isat = π * h * c * Γ / (3 * λ^3)
-    P1 = max_power_frac*0.55*5.8e-3
-    P2 = max_power_frac*0.55*5.2e-3
+    P1 = 1.5*max_power_frac*0.55*5.8e-3
+    P2 = 1.5*max_power_frac*0.55*5.2e-3
     I1 = 2 * P1 / (π * beam_radius^2)
     I2 = 2 * P2 / (π * beam_radius^2)
     total_sat1 = I1 / Isat
